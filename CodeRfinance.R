@@ -3,10 +3,6 @@
 
 library(partialCI)
 library(egcm)
-library(Quandl)
-library(mFilter)
-
-
 
 #### Examples ####
 
