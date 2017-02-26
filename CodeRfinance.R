@@ -9,7 +9,7 @@ library(egcm)
 ### A. Finance ###
 
 
-# Introduction: Creating a residual plot of an OLS regression
+# Introductory example: Creating a residual plot of an OLS regression
 # of Coca-Cola and PepsiCo (1.01.2006 - 1.12.2016, daily)
 # Data are downloaded from Yahoo Finance.
  
