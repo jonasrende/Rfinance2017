@@ -127,7 +127,7 @@ sectorETFS <- c("XLB", "XLE", "XLF", "XLI", "XLK", "XLP", "XLU", "XLV", "XLY")
 
 # Fedge prices for SPY and the ETFs from Yahoo data
 
-prices <- multigetYahooPrices(c("SPY", sectorETFS), start=20060101)
+prices <- multigetYahooPrices(c("SPY", sectorETFS), start=20060101, end=20170131)
 
 # Calculating the best hedging portfolio for the target time series SPY (prices[,"SPY"]) 
 
