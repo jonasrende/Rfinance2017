@@ -1,4 +1,3 @@
-
 #### Packages ####
 
 library(partialCI)
@@ -12,7 +11,7 @@ library(egcm)
 # Introductory example: Creating a residual plot of an OLS regression
 # of Coca-Cola and PepsiCo (1.01.2006 - 1.12.2016, daily)
 # Data are downloaded from Yahoo Finance.
- 
+
 
 
 iStockA<-c("KO")
@@ -120,8 +119,21 @@ abline(-2*sdRDSMC,0, col="blue")
 
 abline(0,0, col="red")
 
+# 3.6) Extracting the random walk component which is located in the fifth column ([,5])
 
-# 3.6) Find the set of sector ETFs forming the best hedging portfolio for the SPY index
+RDS_A_B_RW<-statehistory.pci(RDS_A_B_fit)[,5]
+
+# Generate a zoo object using the mean-reverting component as coredata with a daily time index
+
+RDS_A_B_RW_zoo<-as.zoo(as.matrix(RDS_A_B_RW), index(StockA))
+
+# Plot the random walk component
+
+plot(RDS_A_B_RW_zoo,type = "l",ylab = "", xlab = "")
+
+abline(0,0, col="red")
+
+# 3.7) Find the set of sector ETFs forming the best hedging portfolio for the SPY index
 
 sectorETFS <- c("XLB", "XLE", "XLF", "XLI", "XLK", "XLP", "XLU", "XLV", "XLY")
 
@@ -132,4 +144,3 @@ prices <- multigetYahooPrices(c("SPY", sectorETFS), start=20060101, end=20170131
 # Calculating the best hedging portfolio for the target time series SPY (prices[,"SPY"]) 
 
 hedge.pci(prices[,"SPY"], prices)
-
