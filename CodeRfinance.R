@@ -5,33 +5,25 @@ library(egcm)
 
 #### Examples ####
 
-### A. Finance ###
+set.seed(1)
 
+# Randomly genereates two cointegrated time series
 
-# Introductory example: Creating a residual plot of an OLS regression
-# of Coca-Cola and PepsiCo (1.01.2006 - 1.12.2016, daily)
-# Data are downloaded from Yahoo Finance.
+classic_coint<-rpci(1000, alpha =1, beta=1, sigma_C=1, rho=0.4, sigma_R=0, sigma_M=1)
 
+# Extract cointegration residuals from a linear regression model and plot them
 
+res_classic<-lm(classic_coint[,1]~-1 + classic_coint[,2])$residuals
+plot(res_classic, type = "l",  xaxt='n', yaxt='n', ann=FALSE)
 
-iStockA<-c("KO")
-iStockB<-c("PEP")
-iStartDate<-20060101
-iEndDate<-20161201
+# Randomly genereates two partially cointegrated time series
 
-StockA<-getYahooData(iStockA[1], iStartDate, iEndDate)$Close
-StockB<-getYahooData(iStockB[1], iStartDate, iEndDate)$Close
+partial_coint<-rpci(1000, alpha =1, beta=1, sigma_C=1, rho=0.4, sigma_R=1, sigma_M=1)
 
-#### Classical CI  KO/PEP ####
-egcm_default_model<-egcm(StockB,StockA,include.const = FALSE)
+# Extract partial cointegration residuals from a linear regression model and plot them
 
-# Plot OLS - residuals
-EGCM_residuals<-matrix(NA,ncol=1,nrow=length(egcm_default_model$residuals))
-EGCM_residuals[,1]<-egcm_default_model$residuals
-EGCM_residuals_zoo<-as.zoo(as.matrix(EGCM_residuals[,1]), index(StockA))
-plot(EGCM_residuals_zoo,type = "l",ylab = "", xlab = "")
-abline(0,0, col="red")
-
+res_partial<-lm(partial_coint[,1]~-1 + partial_coint[,2])$residuals
+plot(res_partial, type = "l", xaxt='n', yaxt='n', ann=FALSE)
 
 # 1.0) Loading RDS-A and RDS-B data from Yahoo Data covering the time period from 01.01.2006 to 01.12.2016
 
@@ -131,16 +123,3 @@ RDS_A_B_RW_zoo<-as.zoo(as.matrix(RDS_A_B_RW), index(StockA))
 
 plot(RDS_A_B_RW_zoo,type = "l",ylab = "", xlab = "")
 
-abline(0,0, col="red")
-
-# 3.7) Find the set of sector ETFs forming the best hedging portfolio for the SPY index
-
-sectorETFS <- c("XLB", "XLE", "XLF", "XLI", "XLK", "XLP", "XLU", "XLV", "XLY")
-
-# Fedge prices for SPY and the ETFs from Yahoo data
-
-prices <- multigetYahooPrices(c("SPY", sectorETFS), start=20060101, end=20170131)
-
-# Calculating the best hedging portfolio for the target time series SPY (prices[,"SPY"]) 
-
-hedge.pci(prices[,"SPY"], prices)
