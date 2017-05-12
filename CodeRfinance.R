@@ -1,7 +1,12 @@
 #### Packages ####
 
+install.packages("TTR")
+install.packages("egcm")
+install.packages("partialCI")
+
 library(partialCI)
 library(egcm)
+library(TTR)
 
 #### Examples ####
 
@@ -35,8 +40,8 @@ iEndDate<-20161201   # Set end date to 01.12.2016
 
 # Fedge closing price time series ($Close) for RDS-A and RDS-B from Yahoo data
 
-StockA<-getYahooData(iStockA[1], iStartDate, iEndDate)$Close
-StockB<-getYahooData(iStockB[1], iStartDate, iEndDate)$Close
+StockA<-TTR::getYahooData(iStockA[1], iStartDate, iEndDate)$Close
+StockB<-TTR::getYahooData(iStockB[1], iStartDate, iEndDate)$Close
 
 # 2.) Perform a classic cointegration analysis, using the default specification (no time trend // with constant) implemented in the R
 # package egcm
@@ -46,26 +51,6 @@ StockB<-getYahooData(iStockB[1], iStartDate, iEndDate)$Close
 
 egcm_default_model<-egcm(StockB,StockA,include.const = FALSE)
 
-# 2.2) Converting the residual series into an zoo object as.zoo(coredata(), index())
-
-# Initializing a matrix of the same length as the residual series with NAs
-
-EGCM_residuals<-matrix(NA,ncol=1,nrow=length(egcm_default_model$residuals)) 
-
-
-EGCM_residuals[,1]<-egcm_default_model$residuals 
-
-# Generate a zoo object using the residual series as coredata with a daily time index
-
-EGCM_residuals_zoo<-as.zoo(as.matrix(EGCM_residuals[,1]), index(StockA))  
-
-# 2.3) Ploting the residual series from the first stage of the Engle-Granger twostep procedure
-
-plot(EGCM_residuals_zoo,type = "l",ylab = "", xlab = "")
-
-# Adding a horizontal zero line in red
-
-abline(0,0, col="red") 
 
 # 3.1) Partial cointegration (PCI) analysis
 
@@ -84,7 +69,21 @@ RDS_A_B_test<-test.pci(StockA,StockB, alpha = 0.05,null_hyp =c("rw","ar1") ,robu
 
 RDS_A_B_statehist<-statehistory.pci(RDS_A_B_fit)
 
-# 3.4) Extracting the mean-reverting component which is located in the fourth column ([,4])
+
+# 3.4) Extracting the PCI residuals ([,3])
+
+RDS_A_B_RES<-statehistory.pci(RDS_A_B_fit)[,3]
+
+# Generate a zoo object using the PCI residual component as coredata with a daily time index
+
+RDS_A_B_RES_zoo<-as.zoo(as.matrix(RDS_A_B_RES), index(StockA)) 
+
+# Plot the PCI residual series
+
+plot(RDS_A_B_RES_zoo,type = "l",ylab = "", xlab = "")
+abline(0,0, col="red")
+
+# 3.5) Extracting the mean-reverting component which is located in the fourth column ([,4])
 
 RDS_A_B_MC<-statehistory.pci(RDS_A_B_fit)[,4]
 
@@ -92,7 +91,7 @@ RDS_A_B_MC<-statehistory.pci(RDS_A_B_fit)[,4]
 
 RDS_A_B_MC_zoo<-as.zoo(as.matrix(RDS_A_B_MC), index(StockA)) 
 
-# 3.5) Plot the mean-revering component and add horizontal blue lines which are
+# Plot the mean-revering component and add horizontal blue lines which are
 # equal to two times the historical in-sample standard deviation
 
 # Calculating the historical standard deviation sd()
@@ -106,9 +105,7 @@ plot(RDS_A_B_MC_zoo,type = "l",ylab = "", xlab = "")
 # Adding the standard deviations bands
 
 abline(2*sdRDSMC,0, col="blue")
-
 abline(-2*sdRDSMC,0, col="blue")
-
 abline(0,0, col="red")
 
 # 3.6) Extracting the random walk component which is located in the fifth column ([,5])
@@ -122,4 +119,4 @@ RDS_A_B_RW_zoo<-as.zoo(as.matrix(RDS_A_B_RW), index(StockA))
 # Plot the random walk component
 
 plot(RDS_A_B_RW_zoo,type = "l",ylab = "", xlab = "")
-
+abline(0,0, col="red")
